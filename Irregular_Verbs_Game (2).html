@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Irregular Verbs Game</title>
+<style>
+:root{
+  --bg:#f6efe4; --surface:#fffaf2; --ink:#3b2f28; --muted:#7a6c60; --line:#e3d6c3;
+  --terra:#c0694a; --sage:#5f8a82; --mustard:#d4a24c; --mauve:#8c6a7d; --blue:#6f8ca3; --olive:#7a8f5a;
+  --on:#ffffff; --good:#4f8a5b; --bad:#b5483a; --good-bg:#e3f0e1; --bad-bg:#f7e0db;
+  --display:ui-rounded,"SF Pro Rounded","Avenir Next Rounded","Avenir Next","Trebuchet MS",system-ui,sans-serif;
+  --body:"Avenir Next","Avenir",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#241d19;--surface:#302722;--ink:#f1e6d8;--muted:#b3a393;--line:#493c33;--terra:#dd8566;--sage:#86b3aa;--mustard:#e5b765;--mauve:#b995a8;--blue:#93b0c6;--olive:#a2b97f;--on:#241d19;--good:#8fcf9b;--bad:#f0a094;--good-bg:#2c3d2e;--bad-bg:#46302b}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.4;min-height:100vh;
+  padding:max(14px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));
+  -webkit-user-select:none;user-select:none;touch-action:manipulation}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--display);font-size:clamp(28px,6vw,40px);margin:0;line-height:1.1}
+h2{font-family:var(--display);font-size:22px;margin:0}
+.sub{color:var(--muted);margin:4px 0 0;font-size:16px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sage);outline-offset:2px}
+.lbl{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);border-radius:999px;padding:10px 16px;font-weight:700;font-size:16px;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--sage);border-color:var(--sage);color:var(--on)}
+.seg{display:inline-flex;background:var(--line);border-radius:14px;padding:4px;gap:4px}
+.seg button{padding:10px 14px;border-radius:11px;font-weight:800;font-size:16px;min-height:44px}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 0 var(--line)}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.game{border-radius:22px;padding:18px;text-align:left;color:var(--on);display:flex;flex-direction:column;gap:6px;min-height:128px}
+.game b{font-family:var(--display);font-size:24px}
+.game span{font-size:15px;opacity:.95}
+.g1{background:var(--terra)}.g2{background:var(--sage)}.g3{background:var(--mauve)}.g4{background:var(--blue)}.g5{background:var(--mustard)}.g6{background:var(--olive)}
+.game[disabled]{opacity:.4}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:16px;min-height:380px}
+.top{display:flex;align-items:center;gap:12px}
+.back{border:2px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:800;min-height:44px}
+.prog{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}.prog i{display:block;height:100%;background:var(--mustard);transition:width .25s}
+.pts{font-weight:800;min-width:70px;text-align:right}
+.dir{text-align:center;color:var(--muted);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.word{font-family:var(--display);font-size:clamp(34px,8vw,54px);text-align:center;line-height:1.15;margin:6px 0 0;text-wrap:balance;overflow-wrap:anywhere}
+.row{display:flex;align-items:center;justify-content:center;gap:10px}
+.spk{border:2px solid var(--line);border-radius:50%;width:48px;height:48px;font-size:22px;flex:none}
+.ex{text-align:center;color:var(--muted);font-style:italic;min-height:1.5em;margin:0}
+.btn{border-radius:16px;padding:16px 20px;font-weight:800;font-size:20px;background:var(--terra);color:var(--on);min-height:58px}
+.btn.sec{border:2px solid var(--line);background:transparent;color:var(--ink)}
+.btn.good{background:var(--good-bg);color:var(--good)}.btn.bad{background:var(--bad-bg);color:var(--bad)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto}.btns.one{grid-template-columns:1fr}
+.flip{width:100%;border:3px dashed var(--line);border-radius:22px;background:var(--bg);padding:26px 14px;min-height:190px;display:flex;flex-direction:column;justify-content:center;gap:12px;text-align:center}
+.flip .big{font-family:var(--display);font-size:clamp(28px,7vw,42px);line-height:1.15;overflow-wrap:anywhere}
+.flip .ans{color:var(--terra)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{border:3px solid var(--line);background:var(--bg);border-radius:18px;padding:16px 12px;font-weight:700;font-size:19px;min-height:72px;overflow-wrap:anywhere}
+.opt.right{border-color:var(--good);background:var(--good-bg);color:var(--good)}.opt.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+input[type=text]{font:inherit;font-size:24px;width:100%;padding:16px;border-radius:16px;border:3px solid var(--line);background:var(--bg);color:var(--ink);text-align:center;-webkit-user-select:text;user-select:text}
+.fb{text-align:center;font-weight:800;font-size:20px;min-height:1.5em}.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:560px){.mem{grid-template-columns:repeat(3,1fr)}}
+.tile{border-radius:16px;min-height:96px;padding:8px;font-weight:800;font-size:17px;line-height:1.15;overflow-wrap:anywhere;background:var(--sage);color:var(--on);display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--display);font-size:20px}
+.tile.open{background:var(--surface);color:var(--ink);border:3px solid var(--mustard)}
+.tile.done{background:var(--good-bg);color:var(--good);border:3px solid var(--good);opacity:.85}
+.tile.shake{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.timer{font-family:var(--display);font-size:30px;font-weight:700;min-width:70px;text-align:center}
+.timer.low{color:var(--bad)}
+.end h2{text-align:center;font-size:32px}
+.miss{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.miss li{display:flex;justify-content:space-between;gap:12px;background:var(--bg);border-radius:12px;padding:10px 14px;font-weight:700}
+.miss span:last-child{color:var(--muted);text-align:right}
+.stars{text-align:center;font-size:40px;letter-spacing:6px}
+
+.tb{width:100%;border-collapse:collapse;font-size:17px}.tb th{text-align:left;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px;border-bottom:2px solid var(--line)}.tb td{padding:9px 8px;border-bottom:1px solid var(--line)}
+input::placeholder{font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const RAW = `be | was/were | been | sein | Last summer we ___ in New York. | 1
+begin | began | begun | beginnen | The film ___ at eight o’clock. | 2
+break | broke | broken | kaputt machen, brechen | Tom ___ his arm in the football game. | 2
+bring | brought | brought | bringen | She ___ her laptop to school. | 2
+build | built | built | bauen | They ___ a huge skyscraper in 1931. | 2
+buy | bought | bought | kaufen | I ___ a T-shirt in Brooklyn. | 1
+catch | caught | caught | fangen | He ___ the ball with one hand. | 2
+choose | chose | chosen | wählen, aussuchen | We ___ the blue tickets. | 2
+come | came | come | kommen | Our cousins ___ from Boston. | 1
+cost | cost | cost | kosten | The tickets ___ 30 dollars. | 2
+do | did | done | tun, machen | I ___ my homework before dinner. | 1
+draw | drew | drawn | zeichnen | She ___ a picture of the Statue of Liberty. | 2
+drink | drank | drunk | trinken | We ___ lemonade in Central Park. | 1
+drive | drove | driven | fahren (Auto) | My uncle ___ us to the airport. | 2
+eat | ate | eaten | essen | I ___ a hot dog at the baseball game. | 1
+fall | fell | fallen | fallen | The leaves ___ from the trees in October. | 2
+feel | felt | felt | fühlen | I ___ tired after the marathon. | 2
+find | found | found | finden | He ___ a wallet on the subway. | 1
+fly | flew | flown | fliegen | We ___ from Stuttgart to New York. | 1
+forget | forgot | forgotten | vergessen | Anna ___ her umbrella. | 2
+get | got | got | bekommen, werden | She ___ a new phone for her birthday. | 1
+give | gave | given | geben | Dad ___ me ten dollars. | 1
+go | went | gone | gehen, fahren | Last weekend we ___ to the park. | 1
+grow | grew | grown | wachsen | The tree ___ very fast. | 2
+have | had | had | haben | We ___ a great time in Boston. | 1
+hear | heard | heard | hören | I ___ a loud noise last night. | 2
+hide | hid | hidden | verstecken | The cat ___ under the bed. | 2
+hold | held | held | halten | She ___ my hand. | 2
+keep | kept | kept | behalten | He ___ the ticket in his pocket. | 2
+know | knew | known | wissen, kennen | I ___ the answer. | 1
+leave | left | left | verlassen, abfahren | The bus ___ at nine o’clock. | 2
+lose | lost | lost | verlieren | Our team ___ the game. | 2
+make | made | made | machen, herstellen | We ___ a cake for the party. | 1
+mean | meant | meant | bedeuten, meinen | I ___ the red one. | 2
+meet | met | met | treffen | I ___ my friends at the mall. | 1
+pay | paid | paid | bezahlen | Dad ___ for the tickets. | 2
+put | put | put | legen, stellen | He ___ his bag on the chair. | 1
+read | read | read | lesen | I ___ a fascinating book. | 1
+ride | rode | ridden | reiten, (Rad) fahren | We ___ our bikes to school. | 2
+ring | rang | rung | klingeln, läuten | The phone ___ three times. | 2
+run | ran | run | rennen, laufen | She ___ the marathon in four hours. | 1
+say | said | said | sagen | He ___ ‘Hello’ to everyone. | 1
+see | saw | seen | sehen | We ___ the Empire State Building. | 1
+sell | sold | sold | verkaufen | They ___ hot dogs on the street. | 2
+send | sent | sent | senden, schicken | I ___ a postcard to my grandma. | 2
+sing | sang | sung | singen | The students ___ a song. | 2
+sit | sat | sat | sitzen | We ___ in the front row. | 1
+sleep | slept | slept | schlafen | I ___ for ten hours. | 1
+speak | spoke | spoken | sprechen | She ___ to the teacher. | 2
+spend | spent | spent | verbringen, ausgeben | We ___ the day at the beach. | 2
+stand | stood | stood | stehen | We ___ in line for an hour. | 2
+swim | swam | swum | schwimmen | I ___ in the lake. | 1
+take | took | taken | nehmen, bringen | We ___ the subway to the museum. | 1
+teach | taught | taught | unterrichten | Ms Thompson ___ Maria English. | 2
+tell | told | told | erzählen, sagen | My dad ___ me a funny story. | 2
+think | thought | thought | denken, glauben | I ___ the film was great. | 1
+throw | threw | thrown | werfen | He ___ the ball over the fence. | 2
+understand | understood | understood | verstehen | I ___ the question. | 2
+wear | wore | worn | tragen (Kleidung) | She ___ a red dress. | 2
+win | won | won | gewinnen | Our class ___ the quiz. | 2
+write | wrote | written | schreiben | I ___ an email to my pen pal. | 1`;
+const V=RAW.split('\n').map(l=>l.trim()).filter(Boolean).map((l,i)=>{const [inf,past,pp,de,sent,lvl]=l.split('|').map(s=>s.trim());return {id:i,inf,past,pp,de,sent,lvl:+lvl,pv:past.split('/').map(x=>x.trim()),ppv:pp.split('/').map(x=>x.trim())}});
+const ANS={be:'were'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g,' ').trim();
+const disp=(v,t)=>(t==='past'?v.past:v.pp).replace('/',' / ');
+const forms=(v,t)=>t==='past'?v.pv:v.ppv;
+const regular=v=>{if(v.inf==='be'||v.inf==='put'||v.inf==='cost')return null;const i=v.inf;if(i.endsWith('e'))return i+'d';if(/[^aeiou]y$/.test(i))return i.slice(0,-1)+'ied';return i+'ed'};
+let store={miss:[]};
+try{const r=localStorage.getItem('irregular-verbs-u1');if(r)store=JSON.parse(r)}catch(e){}
+const save=()=>{try{localStorage.setItem('irregular-verbs-u1',JSON.stringify(store))}catch(e){}};
+const addMiss=v=>{if(!store.miss.includes(v.id)){store.miss.push(v.id);save()}};
+const rmMiss=v=>{const i=store.miss.indexOf(v.id);if(i>=0){store.miss.splice(i,1);save()}};
+function speak(t){try{const u=new SpeechSynthesisUtterance(t.replace('/',', '));u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+const S={lv:new Set([1,2]),form:'past'};
+let G=null,timer=null;
+const pool=()=>V.filter(v=>S.lv.has(v.lvl));
+const pickT=()=>S.form==='both'?(Math.random()<.5?'past':'pp'):S.form;
+const TN={past:'Simple Past',pp:'Past Participle'};
+
+function home(){
+  clearInterval(timer);G=null;
+  const n=pool().length,m=store.miss.length;
+  $('app').innerHTML=`<header><h1>Irregular Verbs</h1><p class="sub">Unregelmäßige Verben · ${V.length} Verben · Simple Past und Past Participle</p></header>
+  <div><div class="lbl">Welche Verben?</div><div class="chips">
+    <button class="chip" data-lv="1" aria-pressed="${S.lv.has(1)}">Basis (${V.filter(v=>v.lvl===1).length})</button>
+    <button class="chip" data-lv="2" aria-pressed="${S.lv.has(2)}">Mehr (${V.filter(v=>v.lvl===2).length})</button></div></div>
+  <div><div class="lbl">Welche Form?</div><div class="seg">
+    <button data-f="past" aria-pressed="${S.form==='past'}">Simple Past</button>
+    <button data-f="pp" aria-pressed="${S.form==='pp'}">Past Participle</button>
+    <button data-f="both" aria-pressed="${S.form==='both'}">Beides</button></div></div>
+  <div><div class="lbl">Spiel wählen · ${n} Verben ausgewählt</div><div class="games">
+    <button class="game g1" data-g="cards"><b>Karteikarten</b><span>Umdrehen und selbst einschätzen</span></button>
+    <button class="game g2" data-g="quiz"><b>Quiz</b><span>10 Fragen mit typischen Fehlern als Antwort</span></button>
+    <button class="game g3" data-g="type"><b>Tippen</b><span>Schreibe die richtige Form</span></button>
+    <button class="game g4" data-g="gap"><b>Lückensatz</b><span>Setze das Verb im Simple Past ein</span></button>
+    <button class="game g5" data-g="memory"><b>Memory</b><span>Infinitiv und Form zusammenfinden</span></button>
+    <button class="game g6" data-g="blitz"><b>Blitz</b><span>60 Sekunden, so viele wie möglich</span></button>
+    <button class="game g1" data-g="miss" ${m<1?'disabled':''}><b>Merkliste (${m})</b><span>Verben, die du noch üben solltest</span></button>
+    <button class="game g2" data-g="list"><b>Verbliste</b><span>Alle Verben zum Nachschlagen</span></button>
+  </div></div>`;
+}
+function topbar(){
+  return `<div class="top"><button class="back" id="back">← Menü</button>${G.mode==='blitz'?`<div class="prog"><i id="tb" style="width:${G.t/60*100}%"></i></div><div class="timer ${G.t<=10?'low':''}" id="tt">${G.t}</div>`:`<div class="prog"><i style="width:${G.total?Math.round(G.i/G.total*100):0}%"></i></div>`}<div class="pts">${G.score} ✓</div></div>`;
+}
+function startGame(mode,words){
+  clearInterval(timer);
+  if(mode==='list')return listView();
+  let list=words||(mode==='miss'?store.miss.map(i=>V[i]):pool());
+  list=shuffle(list);if(mode==='quiz'||mode==='gap')list=list.slice(0,10);
+  G={mode,list,i:0,score:0,miss:[],state:'ask',total:list.length,t:60,hint:0,rounds:list,round:0};
+  if(mode==='memory')return memRound();
+  if(mode==='blitz'){G.list=shuffle(pool());G.total=0;timer=setInterval(()=>{G.t--;if(G.t<=0){clearInterval(timer);end()}else{const t=$('tt'),b=$('tb');if(t){t.textContent=G.t;t.classList.toggle('low',G.t<=10)}if(b)b.style.width=(G.t/60*100)+'%'}},1000)}
+  G.q=nextQ();render();
+}
+function nextQ(){
+  const v=G.mode==='blitz'?G.list[G.i%G.list.length]:G.list[G.i];
+  if(!v)return null;
+  const q={v,t:pickT()};
+  if(G.mode==='quiz'||G.mode==='blitz'){
+    const correct=disp(v,q.t),seen=new Set([norm(correct)]);forms(v,q.t).forEach(f=>seen.add(norm(f)));
+    const opts=[{txt:correct,ok:true}];
+    const add=t=>{if(t&&!seen.has(norm(t))){seen.add(norm(t));opts.push({txt:t,ok:false})}};
+    add(q.t==='past'?disp(v,'pp'):disp(v,'past'));add(regular(v));
+    for(const o of shuffle(V.filter(x=>x!==v))){if(opts.length>=4)break;add(disp(o,q.t))}
+    q.opts=shuffle(opts);
+  }
+  return q;
+}
+function render(){
+  if(!G)return home();
+  if(G.mode==='memory')return memRender();
+  if(!G.q)return end();
+  const q=G.q,v=q.v,app=$('app'),dn=G.state==='done';
+  const spk=`<button class="spk" id="spk" aria-label="Aussprache">🔊</button>`;
+  const head=(extra)=>`<div class="dir">${extra}</div><div class="row"><p class="word">${esc(v.inf)}</p>${spk}</div><p class="ex">${esc(v.de)}</p>`;
+  let body='';
+  if(G.mode==='cards'){
+    body=`<div class="dir">Infinitiv → Formen</div><button class="flip" id="flip"><span class="big">to ${esc(v.inf)}</span><span class="ex" style="margin:0">${esc(v.de)}</span>${dn?`<span class="big ans">${esc(v.past.replace('/',' / '))} – ${esc(v.pp)}</span>`:'<span class="ex">Tippen zum Umdrehen</span>'}</button>
+    <p class="ex">${dn?esc(v.sent.replace('___',ANS[v.inf]||v.pv[0])):''}</p>
+    ${dn?'<div class="btns"><button class="btn bad" id="no">Nochmal</button><button class="btn good" id="yes">Gewusst</button></div>':'<div class="btns one"><button class="btn" id="show">Formen zeigen</button></div>'}`;
+  } else if(G.mode==='quiz'||G.mode==='blitz'){
+    body=head(`Wie heißt das ${TN[q.t]}?`)+`<div class="opts">${q.opts.map((o,k)=>{let c='';if(dn){if(o.ok)c='right';else if(k===G.pick)c='wrong'}return `<button class="opt ${c}" data-k="${k}" ${dn?'disabled':''}>${esc(o.txt)}</button>`}).join('')}</div>
+    ${dn&&G.mode==='quiz'?`<p class="ex">${esc(v.inf)} – ${esc(v.past.replace('/',' / '))} – ${esc(v.pp)}</p><div class="btns one"><button class="btn" id="nx">Weiter</button></div>`:'<p class="ex">&nbsp;</p>'}`;
+  } else if(G.mode==='gap'){
+    const ans=ANS[v.inf]||v.pv[0];
+    const sent=dn?v.sent.replace('___',`<b style="color:var(--${G.ok?'good':'bad'})">${esc(ans)}</b>`):esc(v.sent).replace('___','<span style="display:inline-block;min-width:3.5em;border-bottom:3px solid var(--ink)">&nbsp;</span>');
+    body=`<div class="dir">Setze das Simple Past ein</div><p class="word" style="font-size:clamp(24px,5.5vw,34px)">${sent}</p><p class="ex">(${esc(v.inf)}) · ${esc(v.de)}</p>
+    <form id="f" autocomplete="off"><input type="text" id="a1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Antwort" ${dn?'disabled':''} value="${dn?esc(G.last[0]):''}"></form>
+    <div class="fb ${dn?(G.ok?'ok':'no'):''}">${dn?(G.ok?'Richtig!':'Richtig wäre: '+esc(ans)):'&nbsp;'}</div>
+    <div class="btns">${dn?'<button class="btn" id="nx" style="grid-column:1/-1">Weiter</button>':'<button class="btn sec" id="hint" type="button">Tipp</button><button class="btn" id="chk" type="button">Prüfen</button>'}</div>`;
+  } else { // type / miss
+    const ts=S.form==='both'?['past','pp']:[S.form];
+    G.ts=ts;
+    body=head(`Schreibe: ${ts.map(t=>TN[t]).join(' und ')}`)+`<form id="f" autocomplete="off" style="display:grid;gap:10px;grid-template-columns:${ts.length===2?'1fr 1fr':'1fr'}">${ts.map((t,k)=>`<input type="text" id="a${k+1}" placeholder="${TN[t]}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="${TN[t]}" ${dn?'disabled':''} value="${dn?esc(G.last[k]):''}">`).join('')}</form>
+    <div class="fb ${dn?(G.ok?'ok':'no'):''}">${dn?(G.ok?'Richtig!':'Richtig wäre: '+esc(v.past.replace('/',' / ')+' – '+v.pp)):'&nbsp;'}</div>
+    <div class="btns">${dn?'<button class="btn" id="nx" style="grid-column:1/-1">Weiter</button>':'<button class="btn sec" id="hint" type="button">Tipp</button><button class="btn" id="chk" type="button">Prüfen</button>'}</div>`;
+  }
+  app.innerHTML=`<div class="card">${topbar()}${body}</div>`;
+  $('back').onclick=()=>{clearInterval(timer);home()};
+  if($('spk'))$('spk').onclick=()=>speak(v.inf);
+  if(G.mode==='cards'){
+    const f=()=>{G.state='done';speak(v.inf+', '+v.past+', '+v.pp);render()};
+    if($('flip'))$('flip').onclick=f;if($('show'))$('show').onclick=f;
+    if($('yes'))$('yes').onclick=()=>advance(true);
+    if($('no'))$('no').onclick=()=>{G.list.push(v);G.total++;advance(false)};
+  } else if(G.mode==='quiz'||G.mode==='blitz'){
+    document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(G.state==='done')return;G.pick=+b.dataset.k;G.ok=q.opts[G.pick].ok;G.state='done';render();
+      if(G.mode==='blitz')setTimeout(()=>{if(G&&G.mode==='blitz'&&G.q===q)advance(G.ok)},G.ok?280:900);
+    });
+    if($('nx'))$('nx').onclick=()=>advance(G.ok);
+  } else {
+    if(dn){$('nx').onclick=()=>advance(G.ok);setTimeout(()=>$('nx')&&$('nx').focus(),0)}
+    else{
+      $('a1').focus({preventScroll:true});
+      const target=G.mode==='gap'?[ANS[v.inf]?[ANS[v.inf]]:v.pv]:G.ts.map(t=>forms(v,t));
+      $('hint').onclick=()=>{const vals=[...document.querySelectorAll('#f input')].map(i=>i.value);G.hint++;const first=target[0][0];const tip=first.slice(0,Math.min(G.hint,first.length-1));const e=document.querySelector('.fb');e.innerHTML='Tipp: '+esc(tip)+'…';e.className='fb'};
+      const chk=()=>{const ins=[...document.querySelectorAll('#f input')].map(i=>i.value);if(ins.some(x=>!x.trim()))return;
+        G.ok=ins.every((x,k)=>target[k].map(norm).includes(norm(x)));G.last=ins;G.state='done';render()};
+      $('chk').onclick=chk;$('f').onsubmit=e=>{e.preventDefault();chk()};
+    }
+  }
+}
+function advance(ok){
+  const v=G.q.v;
+  if(ok){G.score++;if(G.mode==='miss')rmMiss(v)}else{if(!G.miss.includes(v))G.miss.push(v);addMiss(v)}
+  G.i++;G.state='ask';G.hint=0;G.q=nextQ();
+  if(G.mode==='blitz'&&G.t<=0)return;
+  render();
+}
+function end(){
+  clearInterval(timer);
+  const sc=G.score,tot=G.mode==='blitz'?G.i:G.total;
+  const pct=tot?Math.round(sc/tot*100):0,stars=pct>=90?3:pct>=70?2:pct>=40?1:0;
+  const msg=G.mode==='blitz'?`${sc} richtig in 60 Sekunden`:`${sc} von ${G.total} gewusst`;
+  $('app').innerHTML=`<div class="card end"><h2>${stars===3?'Super!':stars===2?'Stark!':stars===1?'Gut gemacht!':'Weiter üben!'}</h2>
+  <div class="stars">${'★'.repeat(stars)}<span style="opacity:.25">${'★'.repeat(3-stars)}</span></div>
+  <p class="ex" style="font-style:normal;font-size:20px">${msg}</p>
+  ${G.miss.length?`<div><div class="lbl">Das üben wir noch</div><ul class="miss">${G.miss.map(v=>`<li><span>${esc(v.inf)}</span><span>${esc(v.past.replace('/',' / '))} – ${esc(v.pp)}</span></li>`).join('')}</ul></div>`:''}
+  <div class="btns ${G.miss.length?'':'one'}">${G.miss.length?'<button class="btn sec" id="rm">Fehler üben</button>':''}<button class="btn" id="again">Nochmal</button></div>
+  <button class="back" id="back" style="align-self:center">← Menü</button></div>`;
+  $('back').onclick=home;
+  const mode=G.mode,miss=G.miss.slice();
+  $('again').onclick=()=>startGame(mode);
+  if($('rm'))$('rm').onclick=()=>startGame('type',miss);
+}
+// ---- Memory
+function memRound(){
+  const sub=G.rounds.slice(G.round*6,G.round*6+6);
+  if(sub.length<2){G.i=G.total=G.rounds.length;G.score=G.rounds.length;return end()}
+  const t=S.form==='pp'?'pp':'past';
+  G.tiles=shuffle(sub.flatMap(v=>[{v,k:'a',txt:v.inf},{v,k:'b',txt:disp(v,t)}])).map((x,i)=>({...x,i,st:'c'}));
+  G.open=[];G.moves=0;G.lock=false;memRender();
+}
+function memRender(){
+  const done=G.tiles.filter(t=>t.st==='d').length/2,tot=G.tiles.length/2;
+  const t=S.form==='pp'?'Past Participle':'Simple Past';
+  $('app').innerHTML=`<div class="card"><div class="top"><button class="back" id="back">← Menü</button><div class="prog"><i style="width:${done/tot*100}%"></i></div><div class="pts">${G.moves} Züge</div></div>
+  <div class="dir">Finde Infinitiv und ${t} · Runde ${G.round+1}</div>
+  <div class="mem">${G.tiles.map(x=>`<button class="tile ${x.st==='o'?'open':x.st==='d'?'done':x.st==='x'?'open shake':''}" data-i="${x.i}" ${x.st==='d'?'disabled':''}>${x.st==='c'?'?':esc(x.txt)}</button>`).join('')}</div></div>`;
+  $('back').onclick=home;
+  document.querySelectorAll('.tile').forEach(b=>b.onclick=()=>memTap(+b.dataset.i));
+}
+function memTap(i){
+  if(G.lock)return;const t=G.tiles[i];if(t.st!=='c')return;
+  t.st='o';G.open.push(t);
+  if(G.open.length===2){
+    G.moves++;const [a,b]=G.open;
+    if(a.v===b.v&&a.k!==b.k){a.st=b.st='d';G.open=[];G.score++;
+      if(G.tiles.every(x=>x.st==='d')){memRender();setTimeout(()=>{G.round++;memRound()},700);return}}
+    else{a.st=b.st='x';G.lock=true;addMiss(a.v);addMiss(b.v);memRender();
+      setTimeout(()=>{a.st=b.st='c';G.open=[];G.lock=false;if(G&&G.mode==='memory')memRender()},1100);return}
+  }
+  memRender();
+}
+// ---- Liste
+function listView(){
+  G=null;
+  $('app').innerHTML=`<div class="card"><div class="top"><button class="back" id="back">← Menü</button><h2 style="flex:1">Verbliste</h2></div>
+  <div style="overflow-x:auto"><table class="tb"><thead><tr><th>Infinitiv</th><th>Simple Past</th><th>Past Participle</th><th>Deutsch</th></tr></thead><tbody>
+  ${V.map(v=>`<tr><td><b>${esc(v.inf)}</b></td><td>${esc(v.past.replace('/',' / '))}</td><td>${esc(v.pp)}</td><td>${esc(v.de)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  $('back').onclick=home;
+}
+document.addEventListener('click',e=>{
+  if(G)return;
+  const lv=e.target.closest('[data-lv]');if(lv){const k=+lv.dataset.lv;if(S.lv.has(k)){if(S.lv.size>1)S.lv.delete(k)}else S.lv.add(k);return home()}
+  const f=e.target.closest('[data-f]');if(f){S.form=f.dataset.f;return home()}
+  const g=e.target.closest('[data-g]');if(g&&!g.disabled)startGame(g.dataset.g);
+});
+home();
+
+</script>
+</body>
+</html>
